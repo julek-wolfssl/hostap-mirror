@@ -3819,7 +3819,7 @@ mscs_end:
 		wpa_ie_len += multi_ap_ie_len;
 	}
 
-	if (bss && wpa_bss_get_vendor_ie(bss, RSNE_OVERRIDE_IE_VENDOR_TYPE) &&
+	if (wpas_ap_supports_rsn_overriding(wpa_s, bss) &&
 	    wpa_ie_len + 2 + 4 <= max_wpa_ie_len) {
 		u8 *pos = wpa_ie + wpa_ie_len;
 
@@ -9405,6 +9405,32 @@ bool wpas_is_6ghz_supported(struct wpa_supplicant *wpa_s, bool only_enabled)
 					return true;
 			}
 		}
+	}
+
+	return false;
+}
+
+
+bool wpas_ap_supports_rsn_overriding(struct wpa_supplicant *wpa_s,
+				     struct wpa_bss *bss)
+{
+	int i;
+
+	if (!bss)
+		return false;
+	if (wpa_bss_get_vendor_ie(bss, RSNE_OVERRIDE_IE_VENDOR_TYPE))
+		return true;
+
+	if (!wpa_s->valid_links)
+		return false;
+
+	for (i = 0; i < MAX_NUM_MLD_LINKS; i++) {
+		if (!(wpa_s->valid_links & BIT(i)))
+			continue;
+		if (wpa_s->links[i].bss &&
+		    wpa_bss_get_vendor_ie(wpa_s->links[i].bss,
+					  RSNE_OVERRIDE_IE_VENDOR_TYPE))
+			return true;
 	}
 
 	return false;
