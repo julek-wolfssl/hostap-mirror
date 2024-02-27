@@ -4320,7 +4320,8 @@ SM_STATE(WPA_PTK, PTKINITNEGOTIATING)
 			wpa_ie = wpa_ie + wpa_ie[1] + 2;
 		wpa_ie_len = wpa_ie[1] + 2;
 	}
-	if (sm->rsn_override) {
+	if (sm->rsn_override &&
+	    get_vendor_ie(wpa_ie, wpa_ie_len, RSNE_OVERRIDE_IE_VENDOR_TYPE)) {
 		const u8 *mde, *fte, *tie, *tie2 = NULL;
 		const u8 *override_rsne = NULL, *override_rsnxe = NULL;
 		const struct element *elem;
@@ -6953,7 +6954,7 @@ void wpa_auth_set_ml_info(struct wpa_state_machine *sm, const u8 *mld_addr,
 		u8 rsn_ies_len;
 
 		sm_link = &sm->mld_links[ml_rsn_info.links[i].link_id];
-		if (sm->rsn_override) {
+		if (sm->rsn_override && ml_rsn_info.links[i].rsne_override) {
 			wpa_printf(MSG_INFO,
 				   "WPA_AUTH: MLD: Use RSNE/RSNXE override values for link %d",
 				   i);
